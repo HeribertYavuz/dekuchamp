@@ -13,7 +13,6 @@ jobs:
   build:
     runs-on: windows-2022
     env:
-      WDK_ROOT: C:\WinDDK\7600.16385.1
       WDK_ISO_URL: https://download.microsoft.com/download/4/A/2/4A25C7D5-EFBE-4182-B6A9-AE6850409A78/GRMWDK_EN_7600_1.ISO
     steps:
       - uses: actions/checkout@v4
@@ -45,9 +44,11 @@ jobs:
             Write-Host "$($m.Name) exit $($p.ExitCode)"
           }
           Write-Host "Files extracted: $((Get-ChildItem $dst -Recurse -File).Count)"
-          Get-ChildItem $dst -Recurse -Filter setenv.bat | ForEach-Object { "setenv: $($_.FullName)" }
-          Get-ChildItem $dst -Recurse -Filter build.exe | ForEach-Object { "build: $($_.FullName)" }
-          Get-ChildItem $dst -Directory | ForEach-Object { "top: $($_.Name)" }
+          $setenv = Get-ChildItem $dst -Recurse -Filter setenv.bat | Select-Object -First 1
+          if (-not $setenv) { throw "setenv.bat not found after extraction" }
+          $root = Split-Path (Split-Path $setenv.FullName -Parent) -Parent
+          Write-Host "WDK_ROOT=$root"
+          "WDK_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Build driver and CMD (x64, Win7)
         shell: cmd
