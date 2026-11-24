@@ -57,12 +57,17 @@ jobs:
           cd /d "%GITHUB_WORKSPACE%"
           where cl.exe
           where link.exe
-          build -cg > "%RUNNER_TEMP%\build_full.txt" 2>&1
+          build -cg -M 1 > "%RUNNER_TEMP%\build_full.txt" 2>&1
           set BUILD_RC=%errorlevel%
           echo BUILD exit code %BUILD_RC%
           type "%RUNNER_TEMP%\build_full.txt"
           echo ---- outputs
-          powershell -NoProfile -Command "Get-ChildItem -Path 'D:\a','C:\wdkadmin' -Recurse -Include *.sys,*.exe -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'dekuchamp' } | ForEach-Object { 'OUT: ' + $_.FullName }"
+          echo ---- driver dir tree
+          dir /s /a "%GITHUB_WORKSPACE%\DekuchampDriver"
+          echo ---- recently written files
+          powershell -NoProfile -Command "Get-ChildItem -Path 'D:\a' -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -gt (Get-Date).AddMinutes(-6) } | Select-Object -First 300 | ForEach-Object { $_.FullName + ' ' + $_.Length }"
+          echo ---- link stderr check
+          powershell -NoProfile -Command "Get-ChildItem -Path 'C:\wdkadmin' -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -gt (Get-Date).AddMinutes(-6) } | Select-Object -First 300 | ForEach-Object { $_.FullName + ' ' + $_.Length }"
           for /r %%f in (*.err *.wrn) do (echo ---- %%f & type "%%f")
           if not "%BUILD_RC%"=="0" exit /b 1
 
