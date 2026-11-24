@@ -41,12 +41,11 @@ jobs:
             $p = Start-Process msiexec -ArgumentList "/i", "`"$($m.FullName)`"", "/qn", "/norestart", "ADDLOCAL=ALL" -Wait -PassThru
             if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 3010) { Write-Host "msiexec exit $($p.ExitCode) for $($m.Name)" }
           }
-          Write-Host "Checking tools:"
-          foreach ($t in @("bin\setenv.bat", "bin\x86\build.exe", "bin\selfsign\inf2cat.exe")) {
-            $path = Join-Path $env:WDK_ROOT $t
-            Write-Host "$t exists: $(Test-Path $path)"
+          Write-Host "Searching for WDK tools after install:"
+          foreach ($n in @("setenv.bat", "build.exe", "inf2cat.exe", "headers")) {
+            Get-ChildItem C:\ -Recurse -Depth 6 -Filter $n -ErrorAction SilentlyContinue | Select-Object -First 3 | ForEach-Object { "$n -> $($_.FullName)" }
           }
-          Get-ChildItem $env:WDK_ROOT -Recurse -Filter build.exe -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+          Get-ChildItem "C:\Program Files*", "C:\Program Files (x86)" -Directory -ErrorAction SilentlyContinue | ForEach-Object { "dir: $($_.FullName)" }
 
       - name: Build driver and CMD (x64, Win7)
         shell: cmd
