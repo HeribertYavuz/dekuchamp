@@ -30,22 +30,24 @@ jobs:
           & "C:\Program Files\7-Zip\7z.exe" x "$env:RUNNER_TEMP\wdk.iso" "-o$env:RUNNER_TEMP\wdkiso" -y | Out-Null
           Get-ChildItem "$env:RUNNER_TEMP\wdkiso\WDK" -Filter *.msi | Measure-Object | ForEach-Object { "MSI count: $($_.Count)" }
 
-      - name: Install WDK 7.1 build tools
+      - name: Administrative install of WDK 7.1 MSIs
         shell: pwsh
         run: |
           $src = "$env:RUNNER_TEMP\wdkiso\WDK"
-          $skip = 'samples|ia64|readme|toolindex|installhelp|dsf|sdv|swtuner|modemtools|oacr|tracingtool|sideshow|avstream|bluetooth|biometric|imaging|wpd|print|wsd|powermanagement|pfd|offreg|dfx_x64|dfx_x86|cancel|bus|sensor|storage|setupsamples'
+          $dst = "C:\wdkadmin"
+          New-Item -ItemType Directory -Force $dst | Out-Null
+          $skip = 'samples|ia64|readme|toolindex|installhelp|dsf|sdv|swtuner|modemtools|oacr|tracingtool|sideshow|avstream|bluetooth|biometric|imaging|wpd|print|wsd|powermanagement|pfd|offreg|cancel|bus|sensor|storage'
           $msis = Get-ChildItem $src -Filter *.msi | Where-Object { $_.Name -notmatch $skip }
           foreach ($m in $msis) {
-            Write-Host "Installing $($m.Name)"
-            $p = Start-Process msiexec -ArgumentList "/i", "`"$($m.FullName)`"", "/qn", "/norestart", "ADDLOCAL=ALL" -Wait -PassThru
-            if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 3010) { Write-Host "msiexec exit $($p.ExitCode) for $($m.Name)" }
+            $log = "$env:RUNNER_TEMP\logs\$($m.BaseName).log"
+            New-Item -ItemType Directory -Force "$env:RUNNER_TEMP\logs" | Out-Null
+            $p = Start-Process msiexec -ArgumentList "/a", "`"$($m.FullName)`"", "/qn", "TARGETDIR=`"$dst`"", "/l*v", "`"$log`"" -Wait -PassThru
+            Write-Host "$($m.Name) exit $($p.ExitCode)"
           }
-          Write-Host "Searching for WDK tools after install:"
-          foreach ($n in @("setenv.bat", "build.exe", "inf2cat.exe", "headers")) {
-            Get-ChildItem C:\ -Recurse -Depth 6 -Filter $n -ErrorAction SilentlyContinue | Select-Object -First 3 | ForEach-Object { "$n -> $($_.FullName)" }
-          }
-          Get-ChildItem "C:\Program Files*", "C:\Program Files (x86)" -Directory -ErrorAction SilentlyContinue | ForEach-Object { "dir: $($_.FullName)" }
+          Write-Host "Files extracted: $((Get-ChildItem $dst -Recurse -File).Count)"
+          Get-ChildItem $dst -Recurse -Filter setenv.bat | ForEach-Object { "setenv: $($_.FullName)" }
+          Get-ChildItem $dst -Recurse -Filter build.exe | ForEach-Object { "build: $($_.FullName)" }
+          Get-ChildItem $dst -Directory | ForEach-Object { "top: $($_.Name)" }
 
       - name: Build driver and CMD (x64, Win7)
         shell: cmd
