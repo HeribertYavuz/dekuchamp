@@ -1,22 +1,22 @@
 call C:\WinDDK\7600.16385.1\bin\setenv.bat C:\WinDDK\7600.16385.1\ fre x64 WIN7
 
 if "%_BUILDARCH%"=="x86" (
-    set USBPcap_arch=i386
+    set Dekuchamp_arch=i386
     if "%DDK_TARGET_OS%"=="WinLH" (
-        set USBPcap_OS=Vista_X86
+        set Dekuchamp_OS=Vista_X86
     ) else if "%DDK_TARGET_OS%"=="WinXP" (
-        set USBPcap_OS=XP_X86
+        set Dekuchamp_OS=XP_X86
     ) else if "%DDK_TARGET_OS%"=="Win7" (
-        set USBPcap_OS=7_X86
+        set Dekuchamp_OS=7_X86
     )
 ) else (
-    set USBPcap_arch=amd64
+    set Dekuchamp_arch=amd64
     if "%DDK_TARGET_OS%"=="WinLH" (
-        set USBPcap_OS=Vista_X64
+        set Dekuchamp_OS=Vista_X64
     ) else if "%DDK_TARGET_OS%"=="WinXP" (
-        set USBPcap_OS=XP_X64
+        set Dekuchamp_OS=XP_X64
     ) else if "%DDK_TARGET_OS%"=="Win7" (
-        set USBPcap_OS=7_X64
+        set Dekuchamp_OS=7_X64
     )
 )
 
@@ -26,10 +26,10 @@ CALL config.bat
 build -ceZg
 if exist build%BUILD_ALT_DIR%.err goto error
 
-%_USBPCAP_SIGNTOOL% %_USBPCAP_SIGN_OPTS_SHA256% USBPcapDriver\obj%BUILD_ALT_DIR%\%USBPcap_arch%\USBPcap.sys
+%_DEKUCHAMP_SIGNTOOL% %_DEKUCHAMP_SIGN_OPTS_SHA256% DekuchampDriver\obj%BUILD_ALT_DIR%\%Dekuchamp_arch%\Dekuchamp.sys
 if errorlevel 1 goto error
 
-Inf2cat.exe /driver:USBPcapDriver\obj%BUILD_ALT_DIR%\%USBPcap_arch%\ /os:%USBPcap_OS%
+Inf2cat.exe /driver:DekuchampDriver\obj%BUILD_ALT_DIR%\%Dekuchamp_arch%\ /os:%Dekuchamp_OS%
 
 goto end
 

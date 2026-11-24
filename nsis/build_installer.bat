@@ -25,8 +25,8 @@ if not defined nsis_compiler (
 )
 
 if defined nsis_compiler (
-    "%nsis_compiler%\makensis.exe" %~dp0USBPcap.nsi
-    %_USBPCAP_SIGNTOOL% %_USBPCAP_SIGN_OPTS_SHA256% USBPcapSetup-%_USBPCAP_VERSION%.exe
+    "%nsis_compiler%\makensis.exe" %~dp0Dekuchamp.nsi
+    %_DEKUCHAMP_SIGNTOOL% %_DEKUCHAMP_SIGN_OPTS_SHA256% DekuchampSetup-%_DEKUCHAMP_VERSION%.exe
     pause
 ) else (
     echo "Error, build system cannot find NSIS! Please reinstall it, add makensis.exe to your PATH, or defined the NSIS_HOME environment variable."

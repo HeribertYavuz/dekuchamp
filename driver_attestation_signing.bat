@@ -1,7 +1,7 @@
 cd %~dp0
 CALL config.bat
 
-CALL :dequote _USBPCAP_VERSION
+CALL :dequote _DEKUCHAMP_VERSION
 
 ::Prepare driver package for Windows 10 Attestation signing
 ::According to documentation Attestation signed driver works
@@ -28,11 +28,11 @@ echo .Set MaxDiskSize=0
 echo .Set CompressionType=MSZIP
 echo .Set Cabinet=on
 echo .Set Compress=on
-echo .Set CabinetNameTemplate=USBPcap-%_USBPCAP_VERSION%-%1.cab
+echo .Set CabinetNameTemplate=Dekuchamp-%_DEKUCHAMP_VERSION%-%1.cab
 echo .Set DestinationDir=Windows10%1
-echo %~dp0Release\Windows8\%1\USBPcap.inf
-echo %~dp0Release\Windows8\%1\USBPcap.sys
-echo %~dp0Release\Windows8\%1\USBPcap.pdb
+echo %~dp0Release\Windows8\%1\Dekuchamp.inf
+echo %~dp0Release\Windows8\%1\Dekuchamp.sys
+echo %~dp0Release\Windows8\%1\Dekuchamp.pdb
 ) > Windows10-%1.ddf
 MakeCab /f Windows10-%1.ddf
 Goto :eof

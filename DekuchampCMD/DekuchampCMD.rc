@@ -1,0 +1,32 @@
+#include "Windows.h"
+#include "version.h"
+
+1                  VERSIONINFO
+FILEVERSION        DEKUCHAMPCMD_VERSION_MAJOR,DEKUCHAMPCMD_VERSION_MINOR,DEKUCHAMPCMD_VERSION_REVISION,DEKUCHAMPCMD_VERSION_BUILD
+PRODUCTVERSION     DEKUCHAMPCMD_VERSION_MAJOR,DEKUCHAMPCMD_VERSION_MINOR,DEKUCHAMPCMD_VERSION_REVISION,DEKUCHAMPCMD_VERSION_BUILD
+FILEFLAGSMASK      0
+FILEFLAGS          (VS_FF_PRIVATEBUILD|VS_FF_PRERELEASE|VS_FF_DEBUG)
+FILEOS             VOS__WINDOWS32
+FILETYPE           VFT_APP
+FILESUBTYPE        0
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName",      "Dekuchamp"
+            VALUE "FileDescription",  "Dekuchamp commandline interface"
+            VALUE "FileVersion",      DEKUCHAMPCMD_VERSION_STR
+            VALUE "InternalName",     "Dekuchamp"
+            VALUE "LegalCopyright",   "(c) 2013-2020 Tomasz Mon"
+            VALUE "OriginalFilename", "DekuchampCMD.exe"
+            VALUE "ProductName",      "Dekuchamp"
+            VALUE "ProductVersion",   DEKUCHAMPCMD_VERSION_STR
+        END
+    END
+
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END

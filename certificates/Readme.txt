@@ -1,11 +1,11 @@
 Following certificates were created with following commands:
-MakeCert -r -pe -ss PrivateCertStore -n "CN=USBPcapTest" -sv USBPcapTestCert.pvk USBPcapTestCert.cer
-pvk2pfx -pvk USBPcapTestCert.pvk -spc USBPcapTestCert.cer -pfx USBPcapTestCert.pfx
+MakeCert -r -pe -ss PrivateCertStore -n "CN=DekuchampTest" -sv DekuchampTestCert.pvk DekuchampTestCert.cer
+pvk2pfx -pvk DekuchampTestCert.pvk -spc DekuchampTestCert.cer -pfx DekuchampTestCert.pfx
 
-Password: USBPcap
+Password: Dekuchamp
 
 
 WARNING: Prior to installing the test-signed driver you need to run:
-CertMgr /add USBPcapTestCert.cer /s /r localMachine root
-CertMgr /add USBPcapTestCert.cer /s /r localMachine trustedpublisher
+CertMgr /add DekuchampTestCert.cer /s /r localMachine root
+CertMgr /add DekuchampTestCert.cer /s /r localMachine trustedpublisher
 Bcdedit.exe -set TESTSIGNING ON

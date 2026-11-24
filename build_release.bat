@@ -10,9 +10,9 @@ mkdir Release\Windows7\x64
 call cmd.exe /c driver_build.bat x86 WIN7 Release\Windows7\x86
 call cmd.exe /c driver_build.bat x64 WIN7 Release\Windows7\x64
 
-::Copy the USBPcapCMD.exe
-copy USBPcapCMD\objfre_win7_x86\i386\USBPcapCMD.exe Release\USBPcapCMD_x86.exe
-copy USBPcapCMD\objfre_win7_amd64\amd64\USBPcapCMD.exe Release\USBPcapCMD_x64.exe
+::Copy the DekuchampCMD.exe
+copy DekuchampCMD\objfre_win7_x86\i386\DekuchampCMD.exe Release\DekuchampCMD_x86.exe
+copy DekuchampCMD\objfre_win7_amd64\amd64\DekuchampCMD.exe Release\DekuchampCMD_x64.exe
 
 ::Build for Windows 8
 mkdir Release\Windows8\x86
@@ -35,7 +35,7 @@ pause
 
 @echo off
 echo Build finished. Please check if Release directory contains all required
-echo files. Now you can build the installer using nsis\USBPcap.nsi
+echo files. Now you can build the installer using nsis\Dekuchamp.nsi
 @echo on
 
 pause

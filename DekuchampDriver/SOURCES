@@ -1,0 +1,35 @@
+TARGETNAME = Dekuchamp
+
+TARGETTYPE = DRIVER
+
+DRIVERTYPE = WDM
+
+INF_NAME=Dekuchamp
+DEKUCHAMP_VERSION=1.5.4.0
+NTTARGETFILE2=$(OBJ_PATH)\$(O)\$(INF_NAME).inf
+
+TARGETLIBS = $(DDK_LIB_PATH)\Wdm.lib \
+             $(DDK_LIB_PATH)\Wdmsec.lib \
+             $(DDK_LIB_PATH)\Ntstrsafe.lib \
+             $(DDK_LIB_PATH)\Ntoskrnl.lib \
+             $(DDK_LIB_PATH)\USBd.lib
+
+C_DEFINES=$(C_DEFINES) -DPOOL_NX_OPTIN=1
+
+INCLUDES = $(DDK_INC_PATH); \
+           $(WDM_INC_PATH);
+
+SOURCES = Dekuchamp.rc               \
+          DekuchampBuffer.c          \
+          DekuchampDeviceControl.c   \
+          DekuchampFilterManager.c   \
+          DekuchampGenReq.c          \
+          DekuchampHelperFunctions.c \
+          DekuchampMain.c            \
+          DekuchampPnP.c             \
+          DekuchampPower.c           \
+          DekuchampRootHubControl.c  \
+          DekuchampQueue.c           \
+          DekuchampTables.c          \
+          DekuchampURB.c
+
