@@ -57,9 +57,12 @@ jobs:
           cd /d "%GITHUB_WORKSPACE%"
           where cl.exe
           where link.exe
-          build -cef
+          build -cg > "%RUNNER_TEMP%\build_full.txt" 2>&1
           set BUILD_RC=%errorlevel%
           echo BUILD exit code %BUILD_RC%
+          type "%RUNNER_TEMP%\build_full.txt"
+          echo ---- outputs
+          dir /s /b *.sys *.exe *.obj 2>nul
           for /r %%f in (*.err *.wrn) do (echo ---- %%f & type "%%f")
           if not "%BUILD_RC%"=="0" exit /b 1
 
