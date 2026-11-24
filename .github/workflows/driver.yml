@@ -1,0 +1,95 @@
+name: Build driver
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-2022
+    env:
+      WDK_ROOT: C:\WinDDK\7600.16385.1
+      WDK_ISO_URL: https://download.microsoft.com/download/4/A/2/4A25C7D5-EFBE-4182-B6A9-AE6850409A78/GRMWDK_EN_7600_1.ISO
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download WDK 7.1 ISO
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri $env:WDK_ISO_URL -OutFile "$env:RUNNER_TEMP\wdk.iso"
+          (Get-FileHash "$env:RUNNER_TEMP\wdk.iso" -Algorithm SHA256).Hash
+
+      - name: Extract WDK ISO
+        shell: pwsh
+        run: |
+          & "C:\Program Files\7-Zip\7z.exe" x "$env:RUNNER_TEMP\wdk.iso" "-o$env:RUNNER_TEMP\wdkiso" -y | Out-Null
+          Get-ChildItem "$env:RUNNER_TEMP\wdkiso\WDK" -Filter *.msi | Measure-Object | ForEach-Object { "MSI count: $($_.Count)" }
+
+      - name: Install WDK 7.1 build tools
+        shell: pwsh
+        run: |
+          $src = "$env:RUNNER_TEMP\wdkiso\WDK"
+          $skip = 'samples|ia64|readme|toolindex|installhelp|dsf|sdv|swtuner|modemtools|oacr|tracingtool|sideshow|avstream|bluetooth|biometric|imaging|wpd|print|wsd|powermanagement|pfd|offreg|dfx_x64|dfx_x86|cancel|bus|sensor|storage|setupsamples'
+          $msis = Get-ChildItem $src -Filter *.msi | Where-Object { $_.Name -notmatch $skip }
+          foreach ($m in $msis) {
+            Write-Host "Installing $($m.Name)"
+            $p = Start-Process msiexec -ArgumentList "/i", "`"$($m.FullName)`"", "/qn", "/norestart", "ADDLOCAL=ALL" -Wait -PassThru
+            if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 3010) { Write-Host "msiexec exit $($p.ExitCode) for $($m.Name)" }
+          }
+          Write-Host "Checking tools:"
+          foreach ($t in @("bin\setenv.bat", "bin\x86\build.exe", "bin\selfsign\inf2cat.exe")) {
+            $path = Join-Path $env:WDK_ROOT $t
+            Write-Host "$t exists: $(Test-Path $path)"
+          }
+          Get-ChildItem $env:WDK_ROOT -Recurse -Filter build.exe -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+
+      - name: Build driver and CMD (x64, Win7)
+        shell: cmd
+        run: |
+          call "%WDK_ROOT%\bin\setenv.bat" %WDK_ROOT%\ fre x64 WIN7
+          cd /d "%GITHUB_WORKSPACE%"
+          build -ceZg
+          if errorlevel 1 exit /b 1
+          if exist build*.err (type build*.err & exit /b 1)
+
+      - name: Sign driver and build catalog
+        shell: pwsh
+        run: |
+          $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter signtool.exe | Where-Object { $_.FullName -match 'x64' } | Select-Object -First 1
+          $inf2cat = Get-ChildItem $env:WDK_ROOT -Recurse -Filter inf2cat.exe | Select-Object -First 1
+          $sys = Get-ChildItem "$env:GITHUB_WORKSPACE\DekuchampDriver" -Recurse -Filter Dekuchamp.sys | Where-Object { $_.FullName -match 'amd64' } | Select-Object -First 1
+          if (-not $sys) { throw "Dekuchamp.sys (amd64) not found" }
+          Write-Host "sys: $($sys.FullName)"
+          & $signtool.FullName sign /v /fd sha256 /f "$env:GITHUB_WORKSPACE\certificates\DekuchampTestCert.pfx" /tr http://timestamp.digicert.com /td sha256 $sys.FullName
+          if ($LASTEXITCODE -ne 0) { throw "signtool failed" }
+          Copy-Item $sys.Directory.FullName "$env:RUNNER_TEMP\pkg" -Recurse
+          & $inf2cat.FullName "/driver:$env:RUNNER_TEMP\pkg" /os:7_X64
+          $cat = Get-ChildItem "$env:RUNNER_TEMP\pkg" -Filter *.cat | Select-Object -First 1
+          & $signtool.FullName sign /v /fd sha256 /f "$env:GITHUB_WORKSPACE\certificates\DekuchampTestCert.pfx" /tr http://timestamp.digicert.com /td sha256 $cat.FullName
+          if ($LASTEXITCODE -ne 0) { throw "catalog signtool failed" }
+
+      - name: Collect release files
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force "$env:RUNNER_TEMP\release" | Out-Null
+          Copy-Item "$env:RUNNER_TEMP\pkg\*" "$env:RUNNER_TEMP\release" -Force
+          Get-ChildItem "$env:GITHUB_WORKSPACE" -Recurse -Filter DekuchampCMD.exe | Where-Object { $_.FullName -match 'amd64|x64' } | Select-Object -First 1 | Copy-Item -Destination "$env:RUNNER_TEMP\release\DekuchampCMD_x64.exe"
+          Get-ChildItem "$env:RUNNER_TEMP\release" | Format-Table Name, Length
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dekuchamp-driver-x64
+          path: ${{ runner.temp }}\release\*
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "$env:GITHUB_REF_NAME" "$env:RUNNER_TEMP\release\*" --clobber
