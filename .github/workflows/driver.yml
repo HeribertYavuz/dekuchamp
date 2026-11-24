@@ -55,9 +55,13 @@ jobs:
         run: |
           call "%WDK_ROOT%\bin\setenv.bat" %WDK_ROOT%\ fre x64 WIN7
           cd /d "%GITHUB_WORKSPACE%"
-          build -ceZg
-          if errorlevel 1 exit /b 1
-          if exist build*.err (type build*.err & exit /b 1)
+          where cl.exe
+          where link.exe
+          build -cef
+          set BUILD_RC=%errorlevel%
+          echo BUILD exit code %BUILD_RC%
+          for /r %%f in (*.err *.wrn) do (echo ---- %%f & type "%%f")
+          if not "%BUILD_RC%"=="0" exit /b 1
 
       - name: Sign driver and build catalog
         shell: pwsh
