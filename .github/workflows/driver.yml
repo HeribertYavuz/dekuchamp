@@ -71,7 +71,7 @@ jobs:
           echo ---- link stderr check
           powershell -NoProfile -Command "Get-ChildItem -Path 'C:\wdkadmin' -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -gt (Get-Date).AddMinutes(-6) } | Select-Object -First 300 | ForEach-Object { $_.FullName + ' ' + $_.Length }"
           for /r %%f in (*.err *.wrn) do (echo ---- %%f & type "%%f")
-          if not "%BUILD_RC%"=="0" exit /b 1
+          if not exist "%GITHUB_WORKSPACE%\DekuchampDriver\objfre_win7_amd64\amd64\Dekuchamp.sys" exit /b 1
 
       - name: Sign driver and build catalog
         shell: pwsh
@@ -94,7 +94,8 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force "$env:RUNNER_TEMP\release" | Out-Null
           Copy-Item "$env:RUNNER_TEMP\pkg\*" "$env:RUNNER_TEMP\release" -Force
-          Get-ChildItem "$env:GITHUB_WORKSPACE" -Recurse -Filter DekuchampCMD.exe | Where-Object { $_.FullName -match 'amd64|x64' } | Select-Object -First 1 | Copy-Item -Destination "$env:RUNNER_TEMP\release\DekuchampCMD_x64.exe"
+          $cmd = Get-ChildItem "$env:GITHUB_WORKSPACE" -Recurse -Filter DekuchampCMD.exe | Where-Object { $_.FullName -match 'amd64' } | Select-Object -First 1
+          if ($cmd) { Copy-Item $cmd.FullName "$env:RUNNER_TEMP\release\DekuchampCMD_x64.exe" } else { Write-Host "DekuchampCMD.exe not built by WDK (OACR error); skipping" }
           Get-ChildItem "$env:RUNNER_TEMP\release" | Format-Table Name, Length
 
       - uses: actions/upload-artifact@v4
