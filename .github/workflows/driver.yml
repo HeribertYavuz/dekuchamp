@@ -93,7 +93,8 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force "$env:RUNNER_TEMP\release" | Out-Null
-          Copy-Item "$env:RUNNER_TEMP\pkg\Dekuchamp.sys", "$env:RUNNER_TEMP\pkg\Dekuchamp.inf", "$env:RUNNER_TEMP\pkg\dekuchampamd64.cat" "$env:RUNNER_TEMP\release" -Force
+          $files = @("Dekuchamp.sys", "Dekuchamp.inf", "dekuchampamd64.cat") | ForEach-Object { Join-Path "$env:RUNNER_TEMP\pkg" $_ }
+          Copy-Item -Path $files -Destination "$env:RUNNER_TEMP\release" -Force
           $cmd = Get-ChildItem "$env:GITHUB_WORKSPACE" -Recurse -Filter DekuchampCMD.exe | Where-Object { $_.FullName -match 'amd64' } | Select-Object -First 1
           if ($cmd) { Copy-Item $cmd.FullName "$env:RUNNER_TEMP\release\DekuchampCMD_x64.exe" } else { Write-Host "DekuchampCMD.exe not built by WDK (OACR error); skipping" }
           Get-ChildItem "$env:RUNNER_TEMP\release" | Format-Table Name, Length
