@@ -62,7 +62,7 @@ jobs:
           echo BUILD exit code %BUILD_RC%
           type "%RUNNER_TEMP%\build_full.txt"
           echo ---- outputs
-          dir /s /b *.sys *.exe *.obj 2>nul
+          powershell -NoProfile -Command "Get-ChildItem -Path 'D:\a','C:\wdkadmin' -Recurse -Include *.sys,*.exe -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'dekuchamp' } | ForEach-Object { 'OUT: ' + $_.FullName }"
           for /r %%f in (*.err *.wrn) do (echo ---- %%f & type "%%f")
           if not "%BUILD_RC%"=="0" exit /b 1
 
