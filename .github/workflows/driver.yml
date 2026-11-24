@@ -62,6 +62,8 @@ jobs:
           echo BUILD exit code %BUILD_RC%
           type "%RUNNER_TEMP%\build_full.txt"
           echo ---- outputs
+          echo ---- WDK build log
+          type "%GITHUB_WORKSPACE%\buildfre_win7_amd64.log"
           echo ---- driver dir tree
           dir /s /a "%GITHUB_WORKSPACE%\DekuchampDriver"
           echo ---- recently written files
