@@ -35,7 +35,7 @@ jobs:
           $src = "$env:RUNNER_TEMP\wdkiso\WDK"
           $dst = "C:\wdkadmin"
           New-Item -ItemType Directory -Force $dst | Out-Null
-          $skip = 'samples|ia64|readme|toolindex|installhelp|dsf|sdv|swtuner|modemtools|oacr|tracingtool|sideshow|avstream|bluetooth|biometric|imaging|wpd|print|wsd|powermanagement|pfd|offreg|cancel|bus|sensor|storage'
+          $skip = 'samples|ia64|readme|toolindex|installhelp|dsf|sdv|swtuner|modemtools|tracingtool|sideshow|avstream|bluetooth|biometric|imaging|wpd|print|wsd|powermanagement|pfd|offreg|cancel|bus|sensor|storage'
           $msis = Get-ChildItem $src -Filter *.msi | Where-Object { $_.Name -notmatch $skip }
           foreach ($m in $msis) {
             $log = "$env:RUNNER_TEMP\logs\$($m.BaseName).log"
